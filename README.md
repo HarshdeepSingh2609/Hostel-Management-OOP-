@@ -40,14 +40,4 @@ A console-based Object-Oriented C++ project to manage hostel accommodations and 
 
 ---
 
-## 🗂️ Project Structure
 
-📁 PROJECT/
-│
-├── main.cpp # Entry point
-├── software.h/.cpp # Core control logic (inherits hostel & mess)
-├── hostel.h/.cpp # Student and hostel management
-├── mess.h/.cpp # Mess menu and billing system
-├── student.txt # Stores student records
-├── mess.txt # Stores mess items
-├── tempo.txt # Temporary file for updates
