@@ -10,6 +10,7 @@
 #include <windows.h>      // ✅ after the above defines
 #undef byte               // ✅ reset so std::byte won't break
 #include <cstdlib>
+#include<limits>
 using namespace std;
 
 software::software() {
@@ -102,7 +103,10 @@ void software::student() {
     int choice;
     cin >> choice;
 
-    if (choice == 1) about();
+    if (choice == 1) {
+        cin.ignore(numeric_limits<std::streamsize>::max(), '\n'); // 🧼 Flush leftover newline
+        about(); // ✅ Show about info
+    }
     else if (choice == 2) search();
     else if (choice == 3) display_menu();
     else if (choice == 4) feedback();
@@ -117,6 +121,7 @@ void software::student() {
         else cout << "Invalid input!" << endl;
     }
 }
+
 
 void software::mess_main_menu() {
     system("cls");
