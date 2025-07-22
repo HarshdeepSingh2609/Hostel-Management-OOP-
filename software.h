@@ -14,6 +14,7 @@ public:
     void display_menu();
     void mess_billing();
     void bill();
+    void advanced_admin_features();  
 };
 
 #endif

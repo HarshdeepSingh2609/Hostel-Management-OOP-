@@ -1,4 +1,3 @@
-
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #define byte win_byte_t   // ✅ prevent conflict with std::byte
@@ -7,10 +6,11 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <windows.h>      // ✅ after the above defines
-#undef byte               // ✅ reset so std::byte won't break
+#include <windows.h>      
+#undef byte              
 #include <cstdlib>
-#include<limits>
+#include <limits>
+
 using namespace std;
 
 software::software() {
@@ -77,24 +77,60 @@ void software::main_menu() {
 
 void software::admin() {
     system("cls");
-    cout << "ADMIN MENU:\n1. Add Data\n2. Delete Data\n3. Modify Data\n4. Display Data\n";
-    cout << "5. Search\n6. Mess Menu\n7. Student Count\n8. Exit\nChoice: ";
+    cout << "ADMIN MENU:\n";
+    cout << "1. Add Data\n2. Delete Data\n3. Modify Data\n4. Display Data\n5. Search\n6. Mess Menu\n";
+    cout << "7. Student Count\n8. Advanced Features\n9. Exit\nChoice: ";
+
     int choice;
     cin >> choice;
 
-    if (choice == 1) add_data();
-    else if (choice == 2) hostel::delete_data();
-    else if (choice == 3) modify_data();
-    else if (choice == 4) display();
-    else if (choice == 5) search();
-    else if (choice == 6) mess_main_menu();
-    else if (choice == 7) number();
-    else if (choice == 8) exit(0);
-    else cout << "Invalid input!";
+    switch (choice) {
+        case 1: add_data(); break;
+        case 2: hostel::delete_data(); break;
+        case 3: modify_data(); break;
+        case 4: display(); break;
+        case 5: search(); break;
+        case 6: mess_main_menu(); break;
+        case 7: number(); break;
+        case 8: advanced_admin_features(); break;
+        case 9: exit(0);
+        default: cout << "Invalid choice!" << endl;
+    }
 
     cout << "Returning to admin menu...\n";
     Sleep(2000);
-    admin();
+    admin();  // loop
+}
+
+void software::advanced_admin_features() {
+    system("cls");
+    cout << "ADVANCED FEATURES MENU:\n";
+    cout << "1. Top 5 Mess Bills\n";
+    cout << "2. Sort Students\n";
+    cout << "3. Group by Branch\n";
+    cout << "4. Find Roommates\n";
+    cout << "5. Top 5 students by mess\n";
+    cout << "6. Search by yoj \n";
+    cout << "7. Back\nChoice: ";
+
+    int choice;
+    cin >> choice;
+
+    switch (choice) {
+        case 1: rank_students_by_bill(); break;
+        case 2: display_sorted(); break;
+        case 3: group_by_branch(); break;
+        case 4: find_roommates_by_id(); break;
+        case 5:top5_by_mess();break;
+        case 6:search_by_yoj_binary();break;
+        case 7: return;
+        default: cout << "Invalid input!\n";
+    }
+
+    cout << "Press any key to continue...\n";
+    char x;
+    cin >> x;
+    advanced_admin_features();  // loop
 }
 
 void software::student() {
@@ -121,7 +157,6 @@ void software::student() {
         else cout << "Invalid input!" << endl;
     }
 }
-
 
 void software::mess_main_menu() {
     system("cls");
@@ -168,6 +203,8 @@ void software::display_menu() {
     else if (choice == "2") display_menu();
 }
 
+
+
 void software::mess_billing() {
     fstream file("mess.txt", ios::in);
     if (!file) {
@@ -207,38 +244,85 @@ void software::mess_billing() {
     int choice;
     cin >> choice;
 
-    if (choice == 1) {
-        char confirm;
-        do {
-            cout << "Enter Y if payment is complete: ";
-            cin >> confirm;
-        } while (confirm != 'y' && confirm != 'Y');
-        cout << "THANK YOU FOR PAYING!\n";
-    } else if (choice == 2) {
-        string temp;
-        cout << "Enter your student ID: ";
-        cin >> temp;
+    string user_id, pwd;
+    cout << "Enter your ID: ";
+    cin >> user_id;
 
-        fstream file1("student.txt", ios::in), file2("tempo.txt", ios::out);
-        while (file1 >> id >> name >> branch >> yoj >> alloted_hostel >> room_no >> room_sec
-                    >> phone_no >> mess_bill >> accomo_bill) {
-            if (temp == id) {
-                mess_bill += sum;
-                cout << "Pending mess bill for " << name << " is now: " << mess_bill << endl;
-            }
-            file2 << id << " " << name << " " << branch << " " << yoj << " " << alloted_hostel << " "
-                  << room_no << " " << room_sec << " " << phone_no << " " << mess_bill << " " << accomo_bill << "\n";
-        }
-        file1.close();
-        file2.close();
-        remove("student.txt");
-        rename("tempo.txt", "student.txt");
+    if (user_id == "UEADMIN") {
+        ofstream adminFile("admin_mess.txt", ios::app);
+        adminFile << "UEADMIN | Admin | " << sum << " | ";
+        adminFile << ((choice == 1) ? "PAID\n" : "UNPAID\n");
+        adminFile.close();
+        cout << "Admin bill saved to admin_mess.txt\n";
+        return;
     }
+
+    cout << "Enter your password: ";
+    cin >> pwd;
+
+    bool authenticated = false;
+    string id, name, branch, yoj, hostel, room_no, room_sec, phone, mess, accomo, pass;
+
+    // Authenticate student
+    fstream file1("student.txt", ios::in);
+    while (getline(file1, id, '|') &&
+           getline(file1, name, '|') &&
+           getline(file1, branch, '|') &&
+           getline(file1, yoj, '|') &&
+           getline(file1, hostel, '|') &&
+           getline(file1, room_no, '|') &&
+           getline(file1, room_sec, '|') &&
+           getline(file1, phone, '|') &&
+           getline(file1, mess, '|') &&
+           getline(file1, accomo, '|') &&
+           getline(file1, pass)) {
+        if (user_id == id && pwd == pass) {
+            authenticated = true;
+            break;
+        }
+    }
+    file1.close();
+
+    if (!authenticated) {
+        cout << "Authentication failed. Billing canceled.\n";
+        return;
+    }
+
+    // Update mess bill
+    fstream in("student.txt", ios::in);
+    fstream out("tempo.txt", ios::out);
+
+    while (getline(in, id, '|') &&
+           getline(in, name, '|') &&
+           getline(in, branch, '|') &&
+           getline(in, yoj, '|') &&
+           getline(in, hostel, '|') &&
+           getline(in, room_no, '|') &&
+           getline(in, room_sec, '|') &&
+           getline(in, phone, '|') &&
+           getline(in, mess, '|') &&
+           getline(in, accomo, '|') &&
+           getline(in, pass)) {
+        if (id == user_id) {
+            float new_bill = stof(mess) + sum;
+            mess = to_string(new_bill);
+            cout << "Pending mess bill for " << name << " is now: " << mess << endl;
+        }
+
+        out << id << "|" << name << "|" << branch << "|" << yoj << "|" << hostel << "|"
+            << room_no << "|" << room_sec << "|" << phone << "|" << mess << "|" << accomo << "|" << pass << "\n";
+    }
+
+    in.close();
+    out.close();
+    remove("student.txt");
+    rename("tempo.txt", "student.txt");
 
     cout << "Press any key to continue... ";
     char b;
     cin >> b;
 }
+
 
 void software::bill() {
     system("cls");
@@ -246,27 +330,47 @@ void software::bill() {
     string roll;
     cin >> roll;
 
-    fstream file1("student.txt", ios::in), file2("tempo.txt", ios::out);
-    int found = 0;
-    while (file1 >> id >> name >> branch >> yoj >> alloted_hostel >> room_no >> room_sec
-                 >> phone_no >> mess_bill >> accomo_bill) {
-        if (roll == id) {
-            found++;
-            cout << "Your current mess bill: " << mess_bill << endl;
+    fstream file1("student.txt", ios::in);
+    fstream file2("tempo.txt", ios::out);
+    string line;
+    bool found = false;
+
+    while (getline(file1, line)) {
+        stringstream ss(line);
+        string id, name, branch, yoj, hostel, room_no, room_sec, phone, mess, accomo, pass;
+
+        getline(ss, id, '|');
+        getline(ss, name, '|');
+        getline(ss, branch, '|');
+        getline(ss, yoj, '|');
+        getline(ss, hostel, '|');
+        getline(ss, room_no, '|');
+        getline(ss, room_sec, '|');
+        getline(ss, phone, '|');
+        getline(ss, mess, '|');
+        getline(ss, accomo, '|');
+        getline(ss, pass, '|');
+
+        if (id == roll) {
+            found = true;
+            float mess_val = stof(mess);
+            cout << "Your current mess bill: " << mess_val << endl;
             cout << "Enter amount to pay: ";
             float money;
             cin >> money;
-            if (money > mess_bill) {
-                float change = money - mess_bill;
-                mess_bill = 0;
+            if (money > mess_val) {
+                float change = money - mess_val;
+                mess_val = 0;
                 cout << "Change to return: Rs. " << change << endl;
             } else {
-                mess_bill -= money;
+                mess_val -= money;
             }
-            cout << "Remaining mess bill: " << mess_bill << endl;
+            mess = to_string(mess_val);
+            cout << "Remaining mess bill: " << mess << endl;
         }
-        file2 << id << " " << name << " " << branch << " " << yoj << " " << alloted_hostel << " "
-              << room_no << " " << room_sec << " " << phone_no << " " << mess_bill << " " << accomo_bill << "\n";
+
+        file2 << id << "|" << name << "|" << branch << "|" << yoj << "|" << hostel << "|"
+              << room_no << "|" << room_sec << "|" << phone << "|" << mess << "|" << accomo << "|" << pass << "\n";
     }
 
     file1.close();
